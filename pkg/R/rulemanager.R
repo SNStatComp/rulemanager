@@ -70,11 +70,13 @@ new_rulemanager.SQLiteConnection <- function(connection, name,...){
   sql[1] <- " 
   attach database [%s.sqlite] as %s;
   " |> sprintf(path, name)
-  
+
+# repository of rules
   sql[2] <- "
   create table %s.rules(
-  name            text primary key,
-  rule            text not null unique,
+  id              integer primary key,
+  name            text not null,
+  rule            text not null,
   label           text,
   description     text,
   valid_from      text,
@@ -85,29 +87,34 @@ new_rulemanager.SQLiteConnection <- function(connection, name,...){
   removed_comment text
   );
   " |> sprintf(name)
-  
+ 
+# table registring rule lists and their meta data.
   sql[3] <- "
-  create table %s.rulesets(
-  name            text primary key,
-  description     text,
-  valid_from      text, 
-  valid_to        text,
-  added_by        text,
-  removed_by      text,
-  added_comment   text,
-  removed_comment text
+  create table %s.rule_lists(
+  id               integer primary key,
+  name             text not null unique,
+  description      text,
+  exists_from      text, 
+  exists_to        text,
+  added_by         text,
+  removed_by       text,
+  adding_comment   text,
+  removing_comment text
   );
   " |> sprintf(name)
   
+ # table registring set membership
   sql[4] <- "
   create table %s.membership(
-  rule            text,    /* foreign key: rule name */
-  ruleset         text,    /* foreign key: ruleset name */
-  valid_from      text,
-  valid_to        text,
-  added_by        text,
-  removed_by      text,
-  added_comment   text,
+  id              integer primary key,
+  rule            text,    /* foreign key: rule id */
+  list            text,    /* foreign key: ruleset id */
+  index           text,    /* position of rule in ruleset */
+  member_from     text,    /* start of membership */
+  member_to       text,    /* end of membership or NULL */
+  user_added      text,    /* user who added the rule to the ruleset */
+  user_removed    text,    /* user who removed the rule to the ruleset */
+  added_comment   text,    /* 
   removed_comment text
   );
   " |> sprintf(name)

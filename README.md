@@ -35,6 +35,10 @@ As a statistics producer, I want to
    data processing and validation.
 4. Be able to trace the evolution of my rules and rule sets so I can (1) give full account
    of my production runs, and (2) reproduce production runs.
+5. Temporarily remove a rule from a rule set so I can handle exceptional and transient
+   data circumstances. This temporary removal should be documented.
+6. Temporarily update a rule in a ruleset so I can handle exceptional and transient
+   data circumstances. This temoporary update should be documented.
 
 ## Design considerations and conditions
 
