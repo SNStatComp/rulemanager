@@ -21,11 +21,11 @@ on rules and rule sets that can be combined to build applications.
 
 ## User stories
 
-The R package `rulemanager` aims to support the following user storiese.
+The R package `rulemanager` aims to support the following user stories.
 As a statistics producer, I want to 
 
 1. Create, Update, and Delete rules so I can fix my current understanding
-   of the topic in the form of a formal ruleset.
+   of a statistical domain in the form of a formal ruleset.
 2. Select a set of rules so I can apply them to my data.
 3. Be able to trace the evolution of my rules and rule sets so I can (1) give full account
    of my production runs, and (2) reproduce production runs.
