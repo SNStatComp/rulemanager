@@ -1,0 +1,15 @@
+package: rulemanager
+Type: Package
+Title: An API for managing rules and rulesets
+Version: 1.0
+Date: 2022-06-20
+Author: Mark van der Loo
+Maintainer: Mark van der Loo <mark.vanderloo@gmail.com>
+Description: Offers main API entry points for setting up and maintaining
+    the rules and rule sets management system, for rule-driven 
+    statistical production systems. Supports CRUD operations, versioned
+    rules and rule sets.
+License: GPL (>= 2)
+Suggests: tinytest
+Encoding: UTF-8
+RoxygenNote: 7.1.2

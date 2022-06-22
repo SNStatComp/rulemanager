@@ -1,2 +1,8 @@
 # rulemanager
-Management system for rule-driven statistical production systems
+
+Management system for rule-driven statistical production systems.
+
+
+
+
+
