@@ -176,7 +176,7 @@ new_ruleset <- function(manager, ...){
 }
 
 #' @rdname new_ruleset
-#' @exporty
+#' @export
 new_ruleset.RSQLiteConnection <- function(manager, name, valid=NULL, description=NULL){
   
 }

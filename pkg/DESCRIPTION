@@ -1,4 +1,4 @@
-package: rulemanager
+Package: rulemanager
 Type: Package
 Title: An API for managing rules and rulesets
 Version: 1.0
@@ -12,4 +12,4 @@ Description: Offers main API entry points for setting up and maintaining
 License: GPL (>= 2)
 Suggests: tinytest
 Encoding: UTF-8
-RoxygenNote: 7.1.2
+RoxygenNote: 7.2.0
