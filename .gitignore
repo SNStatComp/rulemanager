@@ -1,6 +1,12 @@
+*.Rproj
+
+# man files
+pkg/man/*
+
 # History files
 .Rhistory
 .Rapp.history
+*.swp
 
 # Session Data files
 .RData
