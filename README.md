@@ -42,8 +42,20 @@ As a statistics producer, I want to
 
 ## Design considerations and conditions
 
-
 - Independence of database implementation. By default [SQLite](https://sqlite.org) is used
   but all fundamental operations are polymorphic and can be extended to other databases.
+
+
+## Implentation concepts
+
+- A rule _repository_ is a database that can contain 0 or more _rule managers_.
+- A _rule manager_ is a collection of _rule sets_ consisting of rules coming
+  from a pool of rules that is local to the rule manager but shared between rule sets.
+- Rules have metadata, including name, description, time range of validity
+- Rule set membership has metadata, including a time range of validity
+- Rule sets have metadata including a time range of validity
+
+
+
 
 
