@@ -40,13 +40,21 @@ As a statistics producer, I want to
 6. Temporarily update a rule from one or more rulesets so I can handle exceptional and transient
    data circumstances. This temoporary update should be documented.
 
-## Design considerations and conditions
+## General considerations
+
+A rule repository can hold rules for multiple production systems. In such a
+repository it is not important that rules are mutually consistent
+(non-contradictory) and irredundant. When a set of rules is selected to
+be applied to data, this consistency becomes important.
+
+
+## Design considerations and conditions for this package
 
 - Independence of database implementation. By default [SQLite](https://sqlite.org) is used
   but all fundamental operations are polymorphic and can be extended to other databases.
 
 
-## Implentation concepts
+## Implentation concepts and vocabulary
 
 - A rule _repository_ is a database that can contain 0 or more _rule managers_.
 - A _rule manager_ is a collection of _rule sets_ consisting of rules coming
