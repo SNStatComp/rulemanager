@@ -1,0 +1,93 @@
+% LaTeX template for the UNECE Worksession on Statistical Data Editing 2015, Budapest
+% Last changed: 2015-04-10
+% Author: Matthias Templ (using an earlier version by Steven Vale and Daniel Kilchmann)
+% Revision and modification by Frederic Picard, Statistics Canada
+% April 10 2015
+% Revision and modification by Daniel Kilchmann, Swiss Federal Statistical Office
+% December 7 2016, April 5 2018, October 8 2019, May 18 2022,
+
+% DISCLAIMER: The UNECE document class style and the LaTeX-template
+% are provided without any warranty at all and without any commitment
+% to maintain or correct the code. In no event are UNECE or the
+% author liable for any damages arising from the use of it.
+
+% The uneceart document class style must be used for right numbering etc.
+\documentclass[a4paper,11pt]{style/uneceart}
+
+\usepackage{style/UNECE2022}
+\usepackage{enumerate}
+\usepackage{xcolor}
+\definecolor{unece_color}{RGB}{84, 141, 212}
+
+%%% ----------------------------------------------------------------------
+%%% ---   please fill-in your personal data:   ---------------------------
+
+%% the title of your contribution in capital letters:
+\newcommand{\TITLE}{\textbf{Validation Rule Management} \\}
+%% The type of your paper (contributed or invited)
+\newcommand{\TYPE}{\textbf{Invited paper}\vspace*{5mm}\\}
+
+%% Topic (i,ii,iii,iv,v,..) 
+%\newcommand{\TOPIC}{Theme (i):  \\  }
+%\newcommand{\TOPIC}{Theme (ii):\\  }
+%\newcommand{\TOPIC}{Theme (iii): ):  \\  }
+%\newcommand{\TOPIC}{Theme (iv):  \\  }
+%\newcommand{\TOPIC}{Theme (v):  \\  }
+%\newcommand{\TOPIC}{Theme (XXX): XXXXXXX(choose on the themes from the ones in the Latex comments above) \\  }
+
+%% No. of the working paper (fill-in as soon you know it)
+\newcommand{\WP}{WP. \\   }
+%% author:
+\newcommand{\AUTHOR}{Mark van der Loo, Edwin de Jonge, Olav ten Bosch }
+%% your organisation
+\newcommand{\ORGANISATION}{Author(s) (Statistics Netherlands, The Netherlands}
+\newcommand{\EMAIL}{mpj.vanderloo@cbs.nl}
+
+
+
+
+\begin{document}
+
+\input{UNECE2022cover.tex}
+
+
+
+
+
+% Introduction
+\section{\hspace*{1ex}INTRODUCTION}  %% The extra hspace is only to align the numbering more or less
+
+\paragraph foo bar
+
+\cite{loo2021data}
+
+% First section
+\section{User stories}  \label{sc:A}
+
+\subsection{Formal considerations}
+\paragraph Here is a paragraph.
+
+\begin{equation}
+\mathbb{T}^2 \equiv \{(s,e)\in \mathbb{R}\times(\mathbb{R}\cup\{\infty\})|s\geq0, e\geq s\}.
+\end{equation}
+
+\begin{equation}
+
+\end{equation}
+
+
+
+\subsection{Implementation design} \label{sc:B}
+
+
+
+\section{The rulemanager package}
+
+
+
+\bibliographystyle{plainnat}
+\bibliography{vanderloo}
+
+
+
+\end{document}
