@@ -92,25 +92,27 @@ As a statistical organization, I want to
 \paragraph The most important thing to do in developing any software system is
 designing the formal concepts and their relations, that are necessary to
 support its function. Conceptually we work with two data structures: a rule
-repository and a rule sequence, both of which may depend on time.
+repository and a rule sequence. We next define basic operations that enable us
+to represent the above user stories. 
 
-\paragraph A \emph{rule repository} $R(t)=\{r_1,\ldots,r_m\}$ is a finite set of rules.
-The contents of a rule repository may be time-dependent as new rules can be
-added and obsolete rules can be removed. The purpose of a rule repository is to
-offer a rich set of rules from which selections can be made depending on the
-purpose. For example, data processing rules may differ between running a flash
-estimate and an updated estimate, although strong overlap is likely to exist.
+\paragraph A \emph{rule repository} $R=\{r_1,\ldots,r_m\}$ is a finite set of
+rules.  The contents of a rule repository may be time-dependent as new rules
+can be added and obsolete rules can be removed. The purpose of a rule
+repository is to offer a rich set of rules from which selections can be made
+depending on the purpose. For example, data processing rules may differ between
+running a flash estimate and an updated estimate, although strong overlap is
+likely to exist.
 
-\paragraph A \emph{rule sequence} $L(t) = (r_1,\ldots,r_n)$ is a finite ordered
+\paragraph A \emph{rule sequence} $L = (r_1,\ldots,r_n)$ is a finite ordered
 sequence of rules, where rules come from a predefined, unordered repository.
-The contents and order of a rule sequence may depend on time $t$. Rule
-sequences are applied to data in order, so by function composition we may also
-think of $L(t)$ as a data transformation function defined by the composition
-$r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of selecting a
-subset from a rule repository and placing them in a certain order.  The number
-of ways this can be done grows quickly with the number of rules. For a
-repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
-k}!$ such lists. Although in practice we expect that rule sequences will have
+Rule sequences are applied to data in order, so by function composition we may
+also think of $L(t)$ as a data transformation function defined by the
+composition $r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of
+selecting a subset from a rule repository and placing them in a certain order.
+The number of ways this can be done grows quickly with the number of rules. For
+a repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
+k}!$ such lists, assuming that each rule can occur only once in a rule
+sequence. Although in practice we expect that rule sequences will have
 significant permutational symmetry in the sense that rule order can be
 (partially) changed in many cases without affecting the action of the sequence
 on data sets.
@@ -127,6 +129,36 @@ possibility to see whether different quality restrictions are defined for the
 same variable. The collection of rule sequences derived from the rule
 repository are also interesting from the point of view of the organisation as
 it allows for benchmarking and comparing production systems.
+
+\paragraph The basic operations on rule repositories are addition and removal
+of a single rule. These can be represented as set union $\cup$ and set
+difference $-$. For example, if $R=\{r_1,r_2,r_3\}$ then $R\cup
+\{r_4\}=\{r_1,r_2,r_3,r_4\}$ and $R-\{r_2\}=\{r_1,r_3\}$.
+
+\paragraph The basic operations on rule sequences are permutation,
+concatenation of a single rule, and removal of the last rule. A
+permutation $\sigma_{ij}$ swaps the position of the ith and jth
+element: 
+$$
+\sigma_{ij}(r_1,\ldots, r_i,\ldots,r_j,\ldots, r_n)=
+            (r_1,\ldots, r_j,\ldots,r_i,\ldots, r_n).
+$$
+Concatenation $\oplus$ adds an element from a rule repository at the end of a
+list:
+$$
+(r_1,\ldots,r_n) \oplus (r) = (r_1,\ldots,r_n,r),\: r\in R.
+$$
+Deletion $\ominus$ is a unary operator that removes the last element of a list.
+An empty list is left intact. In notation:
+$$
+\ominus (r_1,\ldots,r_{n-1},r_n) = (r_1,\ldots,r_{n-1}),\textrm{ and } \ominus()=().
+$$
+Together these operations allow for deleting or inserting any rule from and
+into any position. For example, in order to remove the jth element from a rule
+sequence, we just permute with consequtive neighbours until it is the last
+element and apply the $\ominus$ operator. Conversely, we can insert a rule at
+any position by concatenating it at the end with $\oplus$ and then use a
+sequence of permutations to move it into the desired position.
 
 
 
