@@ -40,6 +40,13 @@ As a statistics producer, I want to
 6. Temporarily update a rule from one or more rulesets so I can handle exceptional and transient
    data circumstances. This temoporary update should be documented.
 
+As a statistical organization, I want to
+
+1. Promote reuse of rules.
+2. Promote transparency and learning accross production systems, by
+   comparing
+3. Compare and contrast production systems; benchmark production systems.
+
 ## General considerations
 
 A rule repository can hold rules for multiple production systems. In such a
@@ -50,6 +57,8 @@ be applied to data, this consistency becomes important.
 
 ## Design considerations and conditions for this package
 
+- Build an API that supports basic operations/user stories. These can then
+  be used to build applications that support specific workflows.
 - Independence of database implementation. By default [SQLite](https://sqlite.org) is used
   but all fundamental operations are polymorphic and can be extended to other databases.
 

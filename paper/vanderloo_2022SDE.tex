@@ -64,16 +64,69 @@
 % First section
 \section{User stories}  \label{sc:A}
 
+As a statistics producer, I want to
+\begin{enumerate}
+\item Create, Update, and Delete rules so I can fix my current understanding
+   of a statistical domain in the form of a formal ruleset.
+\item Select a set of rules so I can apply them to my data.
+\item Determine the order of rule execution so I have full control over
+   data processing and validation.
+\item Be able to trace the evolution of my rules and rule sets so I can (a) give full account
+   of my production runs, and (b) reproduce production runs.
+\item Temporarily remove a rule from one or more rule sets so I can handle exceptional and transient
+   data circumstances. This temporary removal should be documented.
+\item Temporarily update a rule from one or more rulesets so I can handle exceptional and transient
+   data circumstances. This temoporary update should be documented.
+\end{enumerate}
+
+As a statistical organization, I want to
+\begin{enumerate}
+\item Promote reuse of rules.
+\item Promote transparency and learning accross production systems, by
+      comparing and benchmarking rules and rule sets.
+\end{enumerate}
+
+
+
 \subsection{Formal considerations}
-\paragraph Here is a paragraph.
+\paragraph The most important thing to do in developing any software system is
+designing the formal concepts and their relations, that are necessary to
+support its function. Conceptually we work with two data structures: a rule
+repository and a rule sequence, both of which may depend on time.
 
-\begin{equation}
-\mathbb{T}^2 \equiv \{(s,e)\in \mathbb{R}\times(\mathbb{R}\cup\{\infty\})|s\geq0, e\geq s\}.
-\end{equation}
+\paragraph A \emph{rule repository} $R(t)=\{r_1,\ldots,r_m\}$ is a finite set of rules.
+The contents of a rule repository may be time-dependent as new rules can be
+added and obsolete rules can be removed. The purpose of a rule repository is to
+offer a rich set of rules from which selections can be made depending on the
+purpose. For example, data processing rules may differ between running a flash
+estimate and an updated estimate, although strong overlap is likely to exist.
 
-\begin{equation}
+\paragraph A \emph{rule sequence} $L(t) = (r_1,\ldots,r_n)$ is a finite ordered
+sequence of rules, where rules come from a predefined, unordered repository.
+The contents and order of a rule sequence may depend on time $t$. Rule
+sequences are applied to data in order, so by function composition we may also
+think of $L(t)$ as a data transformation function defined by the composition
+$r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of selecting a
+subset from a rule repository and placing them in a certain order.  The number
+of ways this can be done grows quickly with the number of rules. For a
+repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
+k}!$ such lists. Although in practice we expect that rule sequences will have
+significant permutational symmetry in the sense that rule order can be
+(partially) changed in many cases without affecting the action of the sequence
+on data sets.
 
-\end{equation}
+\paragraph From the user point of view, a rule sequence is the main conceptual
+structure to work with. Each production run is controlled by one or more of
+such lists, that may be updated as data circumstances evolve over time. From
+the organizational point of view, the rule repository is more interesting. The
+repository $R(t)$ offers the possibility to avoid duplicates and to discover
+common patterns accross rules and rule evolution. In the case of transformation
+rules, it offers the possibility to see whether different choices are made in
+similar data circumstances; in the case of data validation rules it offers the
+possibility to see whether different quality restrictions are defined for the
+same variable. The collection of rule sequences derived from the rule
+repository are also interesting from the point of view of the organisation as
+it allows for benchmarking and comparing production systems.
 
 
 

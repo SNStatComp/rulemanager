@@ -12,4 +12,4 @@ Description: Offers main API entry points for setting up and maintaining
 License: GPL (>= 2)
 Suggests: tinytest
 Encoding: UTF-8
-RoxygenNote: 7.2.0
+RoxygenNote: 7.2.1
