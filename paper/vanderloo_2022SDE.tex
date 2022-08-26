@@ -23,7 +23,7 @@
 %%% ---   please fill-in your personal data:   ---------------------------
 
 %% the title of your contribution in capital letters:
-\newcommand{\TITLE}{\textbf{Validation Rule Management} \\}
+\newcommand{\TITLE}{\textbf{Rule Management} \\}
 %% The type of your paper (contributed or invited)
 \newcommand{\TYPE}{\textbf{Invited paper}\vspace*{5mm}\\}
 
@@ -40,7 +40,7 @@
 %% author:
 \newcommand{\AUTHOR}{Mark van der Loo, Edwin de Jonge, Olav ten Bosch }
 %% your organisation
-\newcommand{\ORGANISATION}{Author(s) (Statistics Netherlands, The Netherlands}
+\newcommand{\ORGANISATION}{\AUTHOR{} (Statistics Netherlands, The Netherlands)}
 \newcommand{\EMAIL}{mpj.vanderloo@cbs.nl}
 
 
@@ -64,10 +64,10 @@
 % First section
 \section{User stories}  \label{sc:A}
 
-As a statistics producer, I want to
-\begin{enumerate}
+As a statistician producing official statistics, I want to
+\begin{enumerate}[S1]
 \item Create, Update, and Delete rules so I can fix my current understanding
-   of a statistical domain in the form of a formal ruleset.
+   of a statistical domain in the form of a formal ruleset.\label{crud}
 \item Select a set of rules so I can apply them to my data.
 \item Determine the order of rule execution so I have full control over
    data processing and validation.
@@ -80,7 +80,7 @@ As a statistics producer, I want to
 \end{enumerate}
 
 As a statistical organization, I want to
-\begin{enumerate}
+\begin{enumerate}[O1]
 \item Promote reuse of rules.
 \item Promote transparency and learning accross production systems, by
       comparing and benchmarking rules and rule sets.
@@ -88,12 +88,85 @@ As a statistical organization, I want to
 
 
 
-\subsection{Formal considerations}
+
+\section{Formal considerations}
 \paragraph The most important thing to do in developing any software system is
-designing the formal concepts and their relations, that are necessary to
-support its function. Conceptually we work with two data structures: a rule
-repository and a rule sequence. We next define basic operations that enable us
-to represent the above user stories. 
+to design the formal concepts and relations that are necessary to support its
+function. Only then can one guarantee that the resulting system can be fully
+understood in the sense that all its capabilities and limitations are known;
+that one can reason about its behaviour because it derives from a compact set
+of formal concepts and relations; that it is extensible because one can build
+complex functionality based on the simple underlying concepts and relations.
+
+\paragraph In the current work, we informally work with data tranformation
+rules of various types, and data validation rules and certain tables to store
+and manage them. In the following subsections we provide formal definitions for
+generic data transformation rules, for the data structures to hold them, and
+for the basic operations to manipulate them.
+
+
+
+\subsection{What are rules?}
+\paragraph The premise of many modern official statistical production systems
+is that they should be rule-driven. Yet, a formal definitioin of such data
+processing rules seems to be lacking.  Here, we generalize the work on data
+validation rules first discussed in \citet{loo2015formal} but see
+\cite{loo2018statistical, loo2021datavalidation} for extensive discussions.  In
+this work, a data set is a finite collection of data points where a \emph{data
+point} is defined as a key-value pair $(k,x)$, where $x$ is the value from a
+specified domain $D$ and $k$ is a key that fully identifies the value. To fully
+identify a value, it was demonstrated that each key should at least represent
+the population, the measurement or observation used to obtain the value, the
+unit of the population that was measured, and the variable that was measured.
+
+\paragraph To understand the ful generality of this definition of a data point,
+it helps to see an example. Suppose we ask two questions to two employees,
+Alice and Bob, of Statistics Netherlands (SN), namely their Age and in what
+Division they work: Economic Statistics (ES) or Social Statistics (SS). In this
+case there are four data points, identified by the following keys:
+\begin{center}
+\begin{tabular}{llll}
+Population      & measurement   & unit & variable \\
+\hline
+Employees of SN & Our questionnaire & Alice & Age     \\
+Employees of SN & Our questionnaire & Alice & Division  \\
+Employees of SN & Our questionnaire & Bob & Age \\
+Employees of SN & Our questionnaire & Bob & Division  \\
+\end{tabular}
+\end{center}
+We are quite permissive in our questionnaire, and it is possible that for
+example Bob mixes up the answers to the questions by filling in the Age in the
+`Division' field, and the Division in the `Age' field. Therefore, the domain $D$
+is the union of all possible answers to all possible questions.
+$$
+D = \{\textrm{SS},\textrm{ES}\}\cup \mathbb{N}\cup\{\textrm{NA}\},
+$$
+where $\textrm{NA}$ stands for Not Available, to allow for missing values.
+
+\paragraph A \emph{data set} is a collection of data points where each key
+occurs exactly once. This gives a data set the structure of a function (a fact
+that was also noted by \citet{gelsema2012organisation}) $K\to D$, where $K$ is
+a finite set of keys. Observe that we do not force any structure on the data
+set. It may consist of a single data point, a record, a few records, or a
+collection of random variables from random units from random populations. A
+data set is therefore not necessarily relational (as in relational databases)
+although in practice they often are. Given a finite set of keys $K$, and a
+domain $D$, the set of all possible datasets is the space of functions from $K$
+to $D$, denoted $D^K$. We are now ready to define the concept of a rule.
+
+\paragraph A \emph{data transformation rule} $r$ is a function that transforms
+one data set into another data set. 
+$$
+r: D^K\to D'^{K'}.
+$$
+Here, $D$ and $D'$ may or may not be the same, and similarly $K$ and $K'$ may
+or may not be the same.
+
+
+\subsection{Data structures}
+\paragraph Conceptually we work with two data structures: a rule repository and
+a rule sequence. We next define basic operations that enable us to represent
+the above user stories. 
 
 \paragraph A \emph{rule repository} $R=\{r_1,\ldots,r_m\}$ is a finite set of
 rules.  The contents of a rule repository may be time-dependent as new rules
@@ -109,13 +182,18 @@ Rule sequences are applied to data in order, so by function composition we may
 also think of $L(t)$ as a data transformation function defined by the
 composition $r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of
 selecting a subset from a rule repository and placing them in a certain order.
-The number of ways this can be done grows quickly with the number of rules. For
-a repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
-k}!$ such lists, assuming that each rule can occur only once in a rule
-sequence. Although in practice we expect that rule sequences will have
-significant permutational symmetry in the sense that rule order can be
-(partially) changed in many cases without affecting the action of the sequence
-on data sets.
+The number of ways this can be done grows quickly with the number of rules.
+Even if we assume that each rule may only appear once in a rule sequence, for a
+repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
+k}!$ such lists. For the current discussion we will not make the
+assumption that rules are unique: in the case of data transformation
+rules, there may be a certain need for iteration.
+
+In practice we expect that rule sequences will have significant permutational
+symmetry, in the sense that rule order can be (partially) changed in many cases
+without affecting the action of the sequence on data sets. The trivial case is
+two consequtive rules in the rule sequence that pertain to different variables.
+These can be swapped without any consequences regarding the outcome.
 
 \paragraph From the user point of view, a rule sequence is the main conceptual
 structure to work with. Each production run is controlled by one or more of
@@ -135,30 +213,37 @@ of a single rule. These can be represented as set union $\cup$ and set
 difference $-$. For example, if $R=\{r_1,r_2,r_3\}$ then $R\cup
 \{r_4\}=\{r_1,r_2,r_3,r_4\}$ and $R-\{r_2\}=\{r_1,r_3\}$.
 
-\paragraph The basic operations on rule sequences are permutation,
-concatenation of a single rule, and removal of the last rule. A
-permutation $\sigma_{ij}$ swaps the position of the ith and jth
-element: 
+\paragraph The basic operations on rule sequences are addition or removal of a
+single rule at the end of the list. The first operation (concatenation,
+$\oplus$) adds an element from a rule repository at the end of a list. We
+denote it here as a labeled unary operator:
 $$
-\sigma_{ij}(r_1,\ldots, r_i,\ldots,r_j,\ldots, r_n)=
-            (r_1,\ldots, r_j,\ldots,r_i,\ldots, r_n).
-$$
-Concatenation $\oplus$ adds an element from a rule repository at the end of a
-list:
-$$
-(r_1,\ldots,r_n) \oplus (r) = (r_1,\ldots,r_n,r),\: r\in R.
+\oplus_{r}(r_1,\ldots,r_n) = (r_1,\ldots,r_n,r),\: r\in R.
 $$
 Deletion $\ominus$ is a unary operator that removes the last element of a list.
 An empty list is left intact. In notation:
 $$
 \ominus (r_1,\ldots,r_{n-1},r_n) = (r_1,\ldots,r_{n-1}),\textrm{ and } \ominus()=().
 $$
-Together these operations allow for deleting or inserting any rule from and
-into any position. For example, in order to remove the jth element from a rule
+Together these operations allow for inserting any rule into any position.  For
+example, to insert a rule after location $i$, first delete alle elements
+$n,n-1,\ldots, n-i+1$, concatenate the new rule, and re-concatenate all rules
+previously removed. Similarly,  it is possible to delete a rule from any
+position. By extension, one can permute rules using sequences of removals and
+concatenations.
+
+
+For example, in order to remove the jth element from a rule
 sequence, we just permute with consequtive neighbours until it is the last
 element and apply the $\ominus$ operator. Conversely, we can insert a rule at
 any position by concatenating it at the end with $\oplus$ and then use a
 sequence of permutations to move it into the desired position.
+
+%A permutation $\sigma_{ij}$ swaps the position of the ith and jth element: 
+%$$
+%\sigma_{ij}(r_1,\ldots, r_i,\ldots,r_j,\ldots, r_n)=
+%            (r_1,\ldots, r_j,\ldots,r_i,\ldots, r_n).
+%$$
 
 
 
