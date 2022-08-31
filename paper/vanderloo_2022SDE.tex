@@ -62,7 +62,8 @@
 \cite{loo2021data}
 
 % First section
-\section{User stories}  \label{sc:A}
+\section{User stories}  
+\label{sect:userstories}
 
 As a statistician producing official statistics, I want to
 \begin{enumerate}[S1]
@@ -114,10 +115,12 @@ validation rules first discussed in \citet{loo2015formal} but see
 \cite{loo2018statistical, loo2021datavalidation} for extensive discussions.  In
 this work, a data set is a finite collection of data points where a \emph{data
 point} is defined as a key-value pair $(k,x)$, where $x$ is the value from a
-specified domain $D$ and $k$ is a key that fully identifies the value. To fully
-identify a value, it was demonstrated that each key should at least represent
-the population, the measurement or observation used to obtain the value, the
-unit of the population that was measured, and the variable that was measured.
+specified domain $D$ and $k$ is a key that fully identifies the value. In other
+words, the key represents necessary and sufficient metadata that identifies the
+value. To fully identify a value, it was demonstrated that each key should at
+least represent the population, the measurement or observation used to obtain
+the value, the unit of the population that was measured, and the variable that
+was measured.
 
 \paragraph To understand the ful generality of this definition of a data point,
 it helps to see an example. Suppose we ask two questions to two employees,
@@ -141,7 +144,9 @@ is the union of all possible answers to all possible questions.
 $$
 D = \{\textrm{SS},\textrm{ES}\}\cup \mathbb{N}\cup\{\textrm{NA}\},
 $$
-where $\textrm{NA}$ stands for Not Available, to allow for missing values.
+where $\textrm{NA}$ stands for Not Available, to allow for missing values.  A
+combination of a key from the above table and a value from $D$ completely
+identifies the value.
 
 \paragraph A \emph{data set} is a collection of data points where each key
 occurs exactly once. This gives a data set the structure of a function (a fact
@@ -156,17 +161,70 @@ to $D$, denoted $D^K$. We are now ready to define the concept of a rule.
 
 \paragraph A \emph{data transformation rule} $r$ is a function that transforms
 one data set into another data set. 
-$$
+\begin{equation}
 r: D^K\to D'^{K'}.
-$$
+\label{eq:ruledef}
+\end{equation}
 Here, $D$ and $D'$ may or may not be the same, and similarly $K$ and $K'$ may
-or may not be the same.
+or may not be the same. This framework is general enough to cover a wide range
+of commonly used types of rules and data processing operations, as will be
+demonstrated by the next examples.
+
+\paragraph \textbf{Data validation rules.} The above general definition reduces
+to the definition of a data validation rule in \cite{loo2021datavalidation} by
+choosing $D=\{0,1\}$, setting $K'$ equal to the singleton set $\{1\}$, and
+demanding that the function is surjective. Data validation rules are
+expressions that evaluate to a boolean that is interpreted as to whether a
+dataset satisfies the demand expressed in the rule or not.
+
+\paragraph \textbf{Conditional data cleaning rules.} These are conditional
+expressions of the form \texttt{IF} a certain data condition is met
+\texttt{THEN} change the value of a certain variable. In these transformations
+the key set does not change, but the Domain $D$ may shrink from a wide range of
+possible values to a smaller (allowed) range of values. So we set $D'\subseteq
+D$ and $K'=K$ in Equation~\eqref{eq:ruledef}.
+
+\paragraph \textbf{Deriving new variables.} This includes creating new
+variables from one or more existing variables. Typical applications are change
+of units, classification, or deriving data quality indicators.  In this case
+metadata changes as a new Also, the domain might change since new variables may
+have new value domains.  So deriving variables falls in the most general
+category defined by Equation~\ref{eq:ruledef}.  
+
+\paragraph \textbf{Combining sources.} Merging two data sets, based on common
+properties is as common as it is important in statistical data processing.
+Before defining this in the context of the current framework, let us look at an
+example. Suppose we have a two measurements (for example questionnaires in a
+panel) and for a certain variable $X$ we want to compare the value of the
+previous measurement $\tau'$ with the current measurement $\tau$.  To combine
+the sources, we need to check for each data point with key $(U, \tau',u,X)$
+($u$ is the population unit) whether a data point with key $(U,\tau,u,X)$
+exists.  If so, we create a new data point where we copy the value from $\tau'$
+to $\tau$ into a new variable:
+$$
+((U,\tau',u,X),x')\mapsto ((U,\tau,u,Y),x').
+$$
+This amounts to a left join where we can now compare $((U,\tau,u,Y),x')$ with
+$((U,\tau,u,X),x)$. Similar operations can be defined where we combine data
+from different populations $U$ and $U'$ for example. In this case, the metadata
+changes because we define a new, merged variable $Y$, but the domains stay the
+same as $Y$ only contains copies of an existing variable $X$. Hence, an operation
+that combines sources is a function $D^K\to D^{K'}$ with $K\subseteq K'$.
+
+\paragraph \textbf{Aggregation.} This amounts to counting of otherwise
+combining multiple data points in to a single data point using arithmetical,
+statistical, or classifying operations. A fundamental aggregation is a
+function $D^K\to D'^{\{1\}}$.
+
 
 
 \subsection{Data structures}
-\paragraph Conceptually we work with two data structures: a rule repository and
-a rule sequence. We next define basic operations that enable us to represent
-the above user stories. 
+\paragraph Having established that the definition of
+Equation~\eqref{eq:ruledef} covers many common types of rules, we will now
+assume that any rule $r$ is of that form and turn to the question of managing
+them. Conceptually we work with two data structures: a rule repository and a
+rule sequence. We next define basic operations that enable us to represent the
+user stories in Section~\ref{sect:userstories}.
 
 \paragraph A \emph{rule repository} $R=\{r_1,\ldots,r_m\}$ is a finite set of
 rules.  The contents of a rule repository may be time-dependent as new rules
@@ -192,7 +250,7 @@ rules, there may be a certain need for iteration.
 In practice we expect that rule sequences will have significant permutational
 symmetry, in the sense that rule order can be (partially) changed in many cases
 without affecting the action of the sequence on data sets. The trivial case is
-two consequtive rules in the rule sequence that pertain to different variables.
+two consecutive rules in the rule sequence that pertain to different variables.
 These can be swapped without any consequences regarding the outcome.
 
 \paragraph From the user point of view, a rule sequence is the main conceptual
