@@ -57,9 +57,8 @@
 % Introduction
 \section{\hspace*{1ex}INTRODUCTION}  %% The extra hspace is only to align the numbering more or less
 
-\paragraph foo bar
+\paragraph 
 
-\cite{loo2021data}
 
 % First section
 \section{User stories}  
@@ -67,9 +66,9 @@
 
 As a statistician producing official statistics, I want to
 \begin{enumerate}[S1]
-\item Create, Update, and Delete rules so I can fix my current understanding
+\item Create,  read, update, and delete rules so I can fix my current understanding
    of a statistical domain in the form of a formal ruleset.\label{crud}
-\item Select a set of rules so I can apply them to my data.
+\item Select a sequence of rules so I can apply them to my data.
 \item Determine the order of rule execution so I have full control over
    data processing and validation.
 \item Be able to trace the evolution of my rules and rule sets so I can (a) give full account
@@ -107,7 +106,7 @@ for the basic operations to manipulate them.
 
 
 
-\subsection{What are rules?}
+\subsection{What are rules?} \label{sect:rules}
 \paragraph The premise of many modern official statistical production systems
 is that they should be rule-driven. Yet, a formal definitioin of such data
 processing rules seems to be lacking.  Here, we generalize the work on data
@@ -217,100 +216,145 @@ statistical, or classifying operations. A fundamental aggregation is a
 function $D^K\to D'^{\{1\}}$.
 
 
+\paragraph Modeling data as a function from a set of content metadata elements
+to a domain of allowed values has the advantage that it allows for elegant and
+formal modeling. This is the case for formal database theories
+\citet{codd1970relational}, as well as more current work based on category
+theory such as in the work of \citet{gelsema2012organisation}, and of
+\citet[Chapter 3]{fong2019seven}. The main disadvantage is that it is difficult
+to model certain technical issues. In particular the existence of multiple
+values for the same data (duplicate records) are not expressible as functions
+from content metadata to a value domain. For example, it is technically
+perfectly possible to create a dataset where the same person occurs twice, once
+with birth year 1978 and once with birth year 1987. The formal solution is to
+extend the key set as defined above and by adding technical metadata, such as
+the location in the file. For our current discussion on rule management, these
+limitations have no consequences.
 
-\subsection{Data structures}
-\paragraph Having established that the definition of
-Equation~\eqref{eq:ruledef} covers many common types of rules, we will now
-assume that any rule $r$ is of that form and turn to the question of managing
-them. Conceptually we work with two data structures: a rule repository and a
-rule sequence. We next define basic operations that enable us to represent the
-user stories in Section~\ref{sect:userstories}.
 
-\paragraph A \emph{rule repository} $R=\{r_1,\ldots,r_m\}$ is a finite set of
-rules.  The contents of a rule repository may be time-dependent as new rules
-can be added and obsolete rules can be removed. The purpose of a rule
-repository is to offer a rich set of rules from which selections can be made
-depending on the purpose. For example, data processing rules may differ between
-running a flash estimate and an updated estimate, although strong overlap is
-likely to exist.
 
-\paragraph A \emph{rule sequence} $L = (r_1,\ldots,r_n)$ is a finite ordered
-sequence of rules, where rules come from a predefined, unordered repository.
-Rule sequences are applied to data in order, so by function composition we may
-also think of $L(t)$ as a data transformation function defined by the
-composition $r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of
-selecting a subset from a rule repository and placing them in a certain order.
-The number of ways this can be done grows quickly with the number of rules.
-Even if we assume that each rule may only appear once in a rule sequence, for a
-repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
-k}!$ such lists. For the current discussion we will not make the
-assumption that rules are unique: in the case of data transformation
-rules, there may be a certain need for iteration.
 
-In practice we expect that rule sequences will have significant permutational
-symmetry, in the sense that rule order can be (partially) changed in many cases
-without affecting the action of the sequence on data sets. The trivial case is
-two consecutive rules in the rule sequence that pertain to different variables.
-These can be swapped without any consequences regarding the outcome.
+\subsection{Rule sequences}
+\paragraph In general, it matters in which order data transformations are
+executed.  Therefore, the main data structe that users encounter are not rule
+sets (as they are usually called) but rather \emph{rule sequences}. That is, a
+list of rules $L = (r_1,r_2,\ldots, r_n)$ with a predefined order. When
+applying a rule sequence to data, we may think of it as a composed function $L
+= r_n\circ r_{n-1}\circ\cdots\circ r_1: D^K\to D'^{K'}$, turing one data set
+into another dataset. 
 
-\paragraph From the user point of view, a rule sequence is the main conceptual
-structure to work with. Each production run is controlled by one or more of
-such lists, that may be updated as data circumstances evolve over time. From
-the organizational point of view, the rule repository is more interesting. The
-repository $R(t)$ offers the possibility to avoid duplicates and to discover
-common patterns accross rules and rule evolution. In the case of transformation
-rules, it offers the possibility to see whether different choices are made in
-similar data circumstances; in the case of data validation rules it offers the
-possibility to see whether different quality restrictions are defined for the
-same variable. The collection of rule sequences derived from the rule
-repository are also interesting from the point of view of the organisation as
-it allows for benchmarking and comparing production systems.
 
-\paragraph The basic operations on rule repositories are addition and removal
-of a single rule. These can be represented as set union $\cup$ and set
-difference $-$. For example, if $R=\{r_1,r_2,r_3\}$ then $R\cup
-\{r_4\}=\{r_1,r_2,r_3,r_4\}$ and $R-\{r_2\}=\{r_1,r_3\}$.
 
-\paragraph The basic operations on rule sequences are addition or removal of a
-single rule at the end of the list. The first operation (concatenation,
-$\oplus$) adds an element from a rule repository at the end of a list. We
-denote it here as a labeled unary operator:
+\paragraph  The above consideration suggests that a rule management system
+consists principally of a set of labeled rule sequences ${L_1,L_2,\ldots,L_k}$,
+where each $L_i$ is a version of a rule sequence, index $i$ labeling the
+version.  To keep track of changes, updates are only done on the rule set with
+the highest index, and any update results in a new rule sequence that is added
+to the set. Principal updates include the following basic operations:
+\begin{enumerate}
+\item Inserting a rule 
+\item Removing a rule
+\item Replacing (updating) a rule
+\item Changing rule order (permutation).
+\end{enumerate}
+Formally, we only need two operations to express any of these operations.
+Concatenating a single rule at the end of a rule sequence and removing a single
+rule at the end of a rule sequence are the most basic operations necessary to
+express all the above operations. However, from a user perspective the above
+operations are the natural activities. User stories S1 and S5 demand that
+versions can be annotated. This means that the basic object is a list of
+objects $\langle L_i,M_i\rangle$ where $L_i$ is a rule sequence and $M_i$ holds
+metadata about the current version. Given a set of versioned and annotated rule
+sequences with $k$ the latest version, any allowed operation 
 $$
-\oplus_{r}(r_1,\ldots,r_n) = (r_1,\ldots,r_n,r),\: r\in R.
+\phi_{k+1}: \{
+\langle L_1,M_1\rangle,
+\langle L_2,M_2\rangle,\ldots,
+\langle L_k,M_k\rangle\}
+\mapsto
+\{
+\langle L_1,M_1\rangle,
+\langle L_2,M_2\rangle,\ldots,
+\langle L_k,M_k\rangle,
+\langle L_{k+1},M_{k+1}\rangle
+\}
 $$
-Deletion $\ominus$ is a unary operator that removes the last element of a list.
-An empty list is left intact. In notation:
-$$
-\ominus (r_1,\ldots,r_{n-1},r_n) = (r_1,\ldots,r_{n-1}),\textrm{ and } \ominus()=().
-$$
-Together these operations allow for inserting any rule into any position.  For
-example, to insert a rule after location $i$, first delete alle elements
-$n,n-1,\ldots, n-i+1$, concatenate the new rule, and re-concatenate all rules
-previously removed. Similarly,  it is possible to delete a rule from any
-position. By extension, one can permute rules using sequences of removals and
-concatenations.
+where the operation $\phi_{k+1}$ is a combination of insertions, removals,
+replacements and permutations. It is not hard to convince oneself that these
+operations support user stories S1 (CRUD), S2 (select a sequence), S3
+(determine execution order), S5 (temporarily remove rules), S6 (temoporarily
+update rules). For support of S4, and in particular the tracability of the
+evolution of rule sequences, we need to look into more detail what the contents
+of the metadata element $M_{k+1}$ should hold.
 
-
-For example, in order to remove the jth element from a rule
-sequence, we just permute with consequtive neighbours until it is the last
-element and apply the $\ominus$ operator. Conversely, we can insert a rule at
-any position by concatenating it at the end with $\oplus$ and then use a
-sequence of permutations to move it into the desired position.
-
-%A permutation $\sigma_{ij}$ swaps the position of the ith and jth element: 
-%$$
-%\sigma_{ij}(r_1,\ldots, r_i,\ldots,r_j,\ldots, r_n)=
-%            (r_1,\ldots, r_j,\ldots,r_i,\ldots, r_n).
-%$$
-
-
-
-\subsection{Implementation design} \label{sc:B}
+\paragraph The problem is that the expression `trace the evolution of rules and
+rule sets' is not very precise. If we interpret it as the ability to precicely
+reconstruct all changes to a rule sequence, then we need to set $M_i= \phi_i$
+(plus some user-defined annotations), and in fact we can suffice by working
+only with the sequence of transformations $\phi_1,\phi_{2}\ldots\phi_{k}$,
+where it is assumed that $L_1=\phi_1 (\:)$ ($\phi_1$ applied to the empty
+list).  If we interpret S4 as the ability to qualitatively reconstruct what
+changes were applied and why, we can suffice with $M_i$ representing
+user-defined descriptions. The actual changes to rule sequences can be
+approximated, for example by computing the shortest sequence of insertions,
+removals, substitutions and permutations that change $L_k$ into $L_{k+1}$
+(Damerau-Levenshtein distance, see \citet{wagner1975extension}). The only extra
+demand is that we are able to compare two rules and test if they are equal or
+not. In this work we shall assume that we only need the latter, less precise
+version of tracability of the evolution of rule sequences. We expect that users
+are less interested in the precise technical steps taken to alter a rule
+sequence, and more in the qualitative description of it.
 
 
 
-\section{The rulemanager package}
 
+
+
+
+
+
+
+\section{The rulemanager package} \label{sect:rulemanager}
+
+
+\section{Conclusion and outlook}
+
+
+\subsection{Some Open Questions}
+
+\paragraph From the examples in Section~\ref{sect:rules} it is clear that rules
+can in general not be placed in any order. Simple example: it is only possible
+to aggregate a derived variable, after the derivation has taken place.  It is
+an interesting question to what extent a rule management system, or tools built
+upon a rule management system are capable of detecting such issues. We are not
+aware of much research in this area.  \citet{scholtus2016generalized} has done
+work in the context of a generalized Fellegi-Holt paradigm, based on affine
+transformations of numerical data.  \citet[Chapter 9]{loo2018statistical}
+derive some general conditions under which conditional data cleaning rules are
+idempotent or commutative. However, as rule-based production systems are slowly
+becoming the norm and considering the trend of internationalisation of (parts
+of) statistical production, amongst others through the exchange of rules
+\cite{bosch2022quality} investigating the quality of rule sets becomes a
+pressing issue. We principally distinguish the following research questions.
+
+\paragraph \textbf{Redundancy and consistency} 
+Rule sets tend to grow organically in organisations. This means that it is
+possible that one part of a rule sequence defines data transformations that are
+undone further down the sequence. For reasons of understandability and
+maintainability it is preferable to avoid such inconsistencies, or at least to
+be able to detect them. Similarly, it is possible for rules to occur twice
+or have two rules with a different explicit definition perform the same
+activity. Again, it is preferable to avoid or detect such situations. 
+
+\paragraph \textbf{Rule minimization and rule counting} It is hard to count
+rules. For example the rule $x\mapsto x+1$ applied twice can be expressed as
+$x\mapsto 2$. So it depends on the way changes to a data set are implemented
+how these changes are counted. The fact that it is hard to count rules makes it
+difficult to objectively compare rule sequences. The logical solution that
+comes to mind is to find a procedure that reduces any rule set to a minimal set
+of canonical instructions. Indeed this reminds of compiling code and it
+possible that, by specializing rule sets to activities typical for statistical
+data processing, we can learn something from that area of computer science.
 
 
 \bibliographystyle{plainnat}
@@ -319,3 +363,83 @@ sequence of permutations to move it into the desired position.
 
 
 \end{document}
+
+
+%\paragraph A \emph{rule repository} $R=\{r_1,\ldots,r_m\}$ is a finite set of
+%rules.  The contents of a rule repository may be time-dependent as new rules
+%can be added and obsolete rules can be removed. The purpose of a rule
+%repository is to offer a rich set of rules from which selections can be made
+%depending on the purpose. For example, data processing rules may differ between
+%running a flash estimate and an updated estimate, although strong overlap is
+%likely to exist.
+
+%\paragraph A \emph{rule sequence} $L = (r_1,\ldots,r_n)$ is a finite ordered
+%sequence of rules, where rules come from a predefined, unordered repository.
+%Rule sequences are applied to data in order, so by function composition we may
+%also think of $L(t)$ as a data transformation function defined by the
+%composition $r_n\circ\cdots\circ r_1$. Creating a rule sequence consists of
+%selecting a subset from a rule repository and placing them in a certain order.
+%The number of ways this can be done grows quickly with the number of rules.
+%Even if we assume that each rule may only appear once in a rule sequence, for a
+%repository of cardinality $m$, there are principally $\sum_{k=0}^m {m\choose
+%k}!$ such lists. For the current discussion we will not make the
+%assumption that rules are unique: in the case of data transformation
+%rules, there may be a certain need for iteration.
+%
+%In practice we expect that rule sequences will have significant permutational
+%symmetry, in the sense that rule order can be (partially) changed in many cases
+%without affecting the action of the sequence on data sets. The trivial case is
+%two consecutive rules in the rule sequence that pertain to different variables.
+%These can be swapped without any consequences regarding the outcome.
+%
+%\paragraph From the user point of view, a rule sequence is the main conceptual
+%structure to work with. Each production run is controlled by one or more of
+%such lists, that may be updated as data circumstances evolve over time. From
+%the organizational point of view, the rule repository is more interesting. The
+%repository $R(t)$ offers the possibility to avoid duplicates and to discover
+%common patterns accross rules and rule evolution. In the case of transformation
+%rules, it offers the possibility to see whether different choices are made in
+%similar data circumstances; in the case of data validation rules it offers the
+%possibility to see whether different quality restrictions are defined for the
+%same variable. The collection of rule sequences derived from the rule
+%repository are also interesting from the point of view of the organisation as
+%it allows for benchmarking and comparing production systems.
+%
+%\paragraph The basic operations on rule repositories are addition and removal
+%of a single rule. These can be represented as set union $\cup$ and set
+%difference $-$. For example, if $R=\{r_1,r_2,r_3\}$ then $R\cup
+%\{r_4\}=\{r_1,r_2,r_3,r_4\}$ and $R-\{r_2\}=\{r_1,r_3\}$.
+%
+%\paragraph The basic operations on rule sequences are addition or removal of a
+%single rule at the end of the list. The first operation (concatenation,
+%$\oplus$) adds an element from a rule repository at the end of a list. We
+%denote it here as a labeled unary operator:
+%$$
+%\oplus_{r}(r_1,\ldots,r_n) = (r_1,\ldots,r_n,r),\: r\in R.
+%$$
+%Deletion $\ominus$ is a unary operator that removes the last element of a list.
+%An empty list is left intact. In notation:
+%$$
+%\ominus (r_1,\ldots,r_{n-1},r_n) = (r_1,\ldots,r_{n-1}),\textrm{ and } \ominus()=().
+%$$
+%Together these operations allow for inserting any rule into any position.  For
+%example, to insert a rule after location $i$, first delete alle elements
+%$n,n-1,\ldots, n-i+1$, concatenate the new rule, and re-concatenate all rules
+%previously removed. Similarly,  it is possible to delete a rule from any
+%position. By extension, one can permute rules using sequences of removals and
+%concatenations.
+%
+%
+%For example, in order to remove the jth element from a rule
+%sequence, we just permute with consequtive neighbours until it is the last
+%element and apply the $\ominus$ operator. Conversely, we can insert a rule at
+%any position by concatenating it at the end with $\oplus$ and then use a
+%sequence of permutations to move it into the desired position.
+
+%A permutation $\sigma_{ij}$ swaps the position of the ith and jth element: 
+%$$
+%\sigma_{ij}(r_1,\ldots, r_i,\ldots,r_j,\ldots, r_n)=
+%            (r_1,\ldots, r_j,\ldots,r_i,\ldots, r_n).
+%$$
+
+
