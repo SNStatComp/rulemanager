@@ -47,7 +47,6 @@
 
 
 \begin{document}
-
 \input{UNECE2022cover.tex}
 
 
@@ -57,21 +56,79 @@
 % Introduction
 \section{\hspace*{1ex}INTRODUCTION}  %% The extra hspace is only to align the numbering more or less
 
-\paragraph 
+\paragraph An important aspect in the modernisation of statistical production
+systems is the idea that subject matter knowledge should be separated as much
+as possible from technical (IT) knowledge. This is apparent in the Common
+Statistical Production Architecture \citep{modernstats2015cspa} which promotes
+a separation between the description of business functions and implementation
+detail. It also promotes a modular architecure where building a production
+system in principle amounts to assembling a set of prebuilt modules for
+different business functions and parameterizing them with business logic for
+the system at  hand.
+
+\paragraph In practice these considerations lead to rule-driven data processing
+systems. In the area of data editing this is nothing new. At least since the
+seminal paper of \citet{fellegi1976systematic} on error localisation,
+statistical offices have worked with rule sets to express subject matter
+knowledge. The idea of rule-based processing is also applied in the area to
+conditional, domain-specific correction rules \citet{pannekoek2013automated},
+to make domain knowledge explicit and to make production processes reproducible
+and transparent. Other recent developments include the development of the
+Validation and Transformation Language \citep{sdmx2015vtl} and the development
+of data validation and rule-based data cleaning engines based in R and Python
+\citep{loo2021validate,loo2021dcmodify,bantilan2020pandera}.
+
+\paragraph The advent of rule-based production systems, as well as the ongoing
+integration of production systems accross institutes naturally leads to the
+issue of rule management. A need arises to manage and maintain rule sets that
+drive production processes. If done properly, rule management systems offer
+great advantages to statistical organisations. They facilitate reproducibility
+of production, exchange and reuse of formalized domain knowledge, and offer the
+possibility of comparing rule sets accross production systems. 
+
+\paragraph The idea of rule management systems is currently developed in
+several contexts. For example, Eurostat is building a repository for the
+Exchange of data validation rules within the European Statistical System.
+Within Statistics Netherlands, two programmes for renewing social and economic
+statistics aim to create modular and rule-based production systems, which calls
+for rule management systems. 
+
+\paragraph This paper contributes to the current discussion by starting with
+the definition of a few user stories, that express what a user might expect
+from a repository. Next, we try to formalize the discussion by formalizing the
+concept of a rules and rule sets. We find that the central object of rule
+management is the concept of a rule sequence: and ordered list of rules. Next,
+we define a basic set of operations on rule sequences that are sufficient to
+support the user stories.  We demonstrate an experimental software that
+implements these ideas in and R-based API that interfaces with a database
+\citep{rcore}. Finally, we summarize our work and discuss a avenues for further
+research.
+
+
+
 
 
 % First section
 \section{User stories}  
 \label{sect:userstories}
+\paragraph User stories are short statements that express tasks that software
+users may want to perform. They are always of the form `as an $X$ I want to
+have $Y$, so I can do $Z$', where $X$, $Y$, and $Z$ are the type of user, the
+activity to be supported and the business goal to be achieved. User stories are
+common in agile development cycles, and are aimed to give a simple and
+understandable overview of what a system is supposed to be able to do, as well
+as a way to prioritize development.
 
-As a statistician producing official statistics, I want to
+
+\paragraph For this work, we assume the following user stories for a rule
+management system: as a statistician producing official statistics, I want to
 \begin{enumerate}[S1]
 \item Create,  read, update, and delete rules so I can fix my current understanding
    of a statistical domain in the form of a formal ruleset.\label{crud}
 \item Select a sequence of rules so I can apply them to my data.
 \item Determine the order of rule execution so I have full control over
    data processing and validation.
-\item Be able to trace the evolution of my rules and rule sets so I can (a) give full account
+\item Be able to trace the evolution of my rule sets so I can (a) give full account
    of my production runs, and (b) reproduce production runs.
 \item Temporarily remove a rule from one or more rule sets so I can handle exceptional and transient
    data circumstances. This temporary removal should be documented.
@@ -79,7 +136,9 @@ As a statistician producing official statistics, I want to
    data circumstances. This temoporary update should be documented.
 \end{enumerate}
 
-As a statistical organization, I want to
+\paragraph There are also user stories from the perspectif of a statistical organisation.
+Although these will not be very influential to our design, it is still illuminating to
+mention them here. As a statistical organization, I want to
 \begin{enumerate}[O1]
 \item Promote reuse of rules.
 \item Promote transparency and learning accross production systems, by
@@ -307,17 +366,140 @@ sequence, and more in the qualitative description of it.
 
 
 
-
-
-
-
-
-
-
 \section{The rulemanager package} \label{sect:rulemanager}
+\paragraph The \texttt{rulemanager} package \citep{loo2022rulemanager} is an
+experimental implementation of the ideas presented above. It offers an API to
+set up and manage rule repositories based on standard relational database
+systems. The aim is to offer a low-level interface (set of functions) that can
+be used to build user-friendly (graphical) interfaces for rule management.
+
+\paragraph Relational data bases have set-based logic: users cannot (by
+default) assume any ordering of records. This means that the order of a rule
+sequence has to be represented explicitly. The simplest implementation would be
+to create a single table with attributes \texttt{Sequence},
+\texttt{SequenceVersion} and \texttt{Rule} and \texttt{Position}, representing
+the rule sequence and version, and the rules with their position in the
+sequence. Any update to a rule sequence would require adding a complete new
+version of a rule to the table, but at least the whole history will be
+retrievable.
+
+\paragraph To save space, we choose an appraoch that is more natural to
+databases and implement the following database diagram.
+\begin{center}
+\includegraphics[width=0.5\textwidth]{figures/dbdiagram.png}
+\end{center}
+We distinguish three entity types: \texttt{Rule}, \texttt{InSequence} and
+\texttt{RuleSequence}.  The entity type \texttt{RuleSequence} only serves to
+add descriptions and other metadata to a sequence. For example, a reference to
+the production system for which they are aimed. The \texttt{Rule} serves to
+avoid duplication of rules. The central entity type is \texttt{InSequence}
+which defines which rules are element of which rule sequence and their position
+in the rule sequence. It is understood that both sequence membership and
+position are valid only in the range $[\texttt{Start}, \texttt{End})$. The
+\texttt{StartComment} and \texttt{EndComment} attributes represent the metadata
+$M_i$ discussed above: it is used to store user comments on the reason for
+updates to the list. In this representation, each record in \texttt{InSequence}
+represents two events: the creation and deletion of a rule. Hence it contains
+two comment fields.  
 
 
-\section{Conclusion and outlook}
+\paragraph To find a particular version of a rule sequence, one filters the
+elements of \texttt{InSequence} for a chosen time \texttt{T} such that
+\texttt{Start <= T < End}, and then collects the actual expressions from
+\texttt{Rule}. This implements user stories S2, and S4. Based on this schema we
+can implement the basic operations of Inserting, Removing, Replacing or
+Permuting rules, which covers all other user stories that relate to
+manipulating the repository.
+
+
+\paragraph In the above schema rules and rule sequences have to be created
+before assigning rules to a position in a particular rule sequence. Therefore
+we define the following functions (in pseudocode).
+\begin{verbatim}
+  new_rule(string: Expression, string: Name, string: Description)
+  new_seqn(string: Name, string: Expression)
+\end{verbatim}
+that add a record to \texttt{Rule} or \texttt{RuleSequence}, respectively.  In
+the above interfaces, as well as in all pseudocode below, we shall not
+explicitly include the primary keys unless it is strictly needed.
+
+\paragraph \textbf{Inserting a rule.} In pseudocode, inserting a rule looks as follows.
+\begin{verbatim}
+  insert(Int: RuleId, Int SeqId, Int: Position, String: Comment):
+     // Shift position of subsequent rules to make place for the new rule
+     n := maximum Position in rule sequence SeqId
+     FOR i = Position TO n:
+       WHERE InSequence.SeqId == SeqId DO
+         InSequence.Position = InSequence.Position + 1 
+     // Insert the new rule into the right position
+     add <RuleId, SeqId, Position, CurrentTime(), NULL, Comment, NULL> to InSequence
+\end{verbatim}
+Where \texttt{CurrentTime()} returns a time stamp. By setting this
+automatically, we prevent the user from `changing history', which would violate
+user story S4.  We initialise the \texttt{End} time with \texttt{NULL}, which
+is  interpreted as $\infty$. We also initialise the \texttt{EndComment} with
+\texttt{NULL}. 
+
+\paragraph \textbf{Removing a rule.} Since we wish to retain a historical record,
+rules are never really removed. In stead, we set their \texttt{End} time in the
+rule sequence.
+\begin{verbatim}
+  remove(Int: InSeqId, DateTime: When, String: Comment):
+    IF When == NULL THEN When := CurrentTime()
+    WHERE InSequence.Id == InSeqId DO: 
+      IF InSequence.End <= When : Return() 
+      ELSE  InSequence.End := When
+            InSequence.EndComment := Comment
+\end{verbatim}
+Where \texttt{Return()} terminates function execution and returns normally.  We
+avoid removing a rule twice by checking whether it was removed earlier.  It is
+important to refer to the primary key of the \texttt{InSequence} record,
+because we allow for rules to occur multiple times in a single sequence. Given
+a rule sequence (\texttt{SeqId}), an element is uniquely defined by
+\texttt{RuleId}, \texttt{Position}, \texttt{Start} and \texttt{End}, so it is
+possible to base the API on these attributes as well.  In a visual interface,
+users normally do not have to bother with these details as they can just select
+the rules graphically.
+
+\paragraph \textbf{Replacing a rule.} This amounts to removing one rule in a
+certain position and adding another, using the two functions above. If this is
+a single action from a user point of view, the \texttt{EndComment} of the
+removed rule also serves as the \texttt{StartComment} of the new rule since
+both actions were performed for a single reason.
+
+\paragraph \textbf{Permuting rules.} All permutations can be build from 
+simple swaps of two positions. The following code does permutes the position
+of two rules.
+\begin{verbatim}
+swap(Int: SeqId, Int: Position1, Int: Position2):
+  WHERE InSequence.SeqId == SeqId DO
+    IF Position1 or Position2 does not exist: Return()
+  WHERE InSeqence.SeqId == SeqId AND InSequence.Position == Position1 DO
+    InSequence.Position := NULL
+  WHERE InSeqence.SeqId == SeqId AND InSequence.Position == Position2 DO
+    InSequence.Position = Position1
+  WHERE InSeqence.SeqId == SeqId AND InSequence.Position == NULL DO
+    InSequence.Position = Position2
+\end{verbatim}
+The above function first checks whether the two positions exist before performing
+the actual swap.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Summary and outlook}
+Starting from the point of view of statistical users, we defined a set of
+wishes that a rule repository should, and should not perform.  Next, we
+formalized the concept of rules, rule sequences and rule repositories, where we
+also identified the basic operations that are necessary to support the user
+stories. Finally, we define a database schema and API that implements these
+operations on a basic level.
+
+\paragraph In the current work, the rule repository is completely agnostic
+about the type of rules that are stored. From the point of view of
+maintainability and reusability this also highly desirable. From the point of
+view of the user one can think of extensions built upon rule repositories that
+are very interesting. In the final Section below we point out a few interesting
+avenues for further research.
 
 
 \subsection{Some Open Questions}
