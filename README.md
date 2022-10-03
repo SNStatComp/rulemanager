@@ -22,6 +22,8 @@ features that focus on CRUD and reproducibility of production. The idea is to
 offer a data structure and an extensible API that offer fundamental operations
 on rules and rule sets that can be combined to build applications.
 
+See also: MPJ. van der Loo, KO ten Bosch and E. de Jonge, [Rule Management](https://indico.un.org/event/1000397/attachments/241/6567/S1b_Netherlands_vanderloo_AD.pdf) UNECE Expert Meeting on Statistical Data Editing [2022](https://indico.un.org/event/1000397/). 
+
 ## Installation
 
 You need to have `git` and `R` installed. If you are on Windows, you also need
@@ -74,18 +76,8 @@ be applied to data, this consistency becomes important.
 
 - Build an API that supports basic operations/user stories. These can then
   be used to build applications that support specific workflows.
-- Independence of database implementation. By default [SQLite](https://sqlite.org) is used
+- (Todo) Independence of database implementation. By default [SQLite](https://sqlite.org) is used
   but all fundamental operations are polymorphic and can be extended to other databases.
-
-
-## Implentation concepts and vocabulary
-
-- A rule _repository_ is a database that can contain 0 or more _rule managers_.
-- A _rule manager_ is a collection of _rule sets_ consisting of rules coming
-  from a pool of rules that is local to the rule manager but shared between rule sets.
-- Rules have metadata, including name, description, time range of validity
-- Rule set membership has metadata, including a time range of validity
-- Rule sets have metadata including a time range of validity
 
 
 
