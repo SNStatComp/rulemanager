@@ -32,7 +32,7 @@ to have `Rtools` installed.
 Open a command-line interface (e.g. Powershell on Windows, bash on Linux/Mac).
 
 ```
-git clone https://SNStatCom/rulemanager
+git clone https://SNStatComp/rulemanager
 cd rule manager
 make doc
 make install
