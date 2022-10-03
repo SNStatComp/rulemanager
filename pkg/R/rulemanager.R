@@ -341,14 +341,15 @@ insert_rule <- function(repo, rule_id, seq_id, position=NA_integer_, comment="")
 #' @param seq_id \code{[integer]} identity of the rule sequence
 #' @param when \code{[character|POSIXct]} time stamp in "YYYY-MM-DD HH:MM:SS" format.
 #'
-#' @return A \code{data.frame} with Position, Name, Expression, sorted ascending
-#'         by Position.
+#' @return For \code{get_rule_sequence} A \code{data.frame} with Position,
+#'         Name, Expression, sorted ascending by Position. 
+#'
 #' @export
 get_rule_sequence <- function(repo, seq_id, when=NA_character_){
  
 
   if (is.na(when)){ 
-    sql <- sprintf("select Position, Name, Expression
+    sql <- sprintf("select RuleId, Position, Name, Expression
                     from InSequence inner join Rule on Rule.Id = InSequence.RuleId
                     where SeqId == %d and End IS NULL
                     order by Position ASC", seq_id)
@@ -364,7 +365,7 @@ get_rule_sequence <- function(repo, seq_id, when=NA_character_){
   }
 
 
-  sql <- sprintf("select POsition, Name, Expression
+  sql <- sprintf("select Position, Name, Expression
                   from InSequence inner join RUle on Rule.Id = InSequence.RuleId
                   where SeqId == %d and Start <= '%s' and (End IS NULL or End > '%s')
                   order by Position ASC",
@@ -374,9 +375,53 @@ get_rule_sequence <- function(repo, seq_id, when=NA_character_){
   out <- dbFetch(res, n=-1)
   dbClearResult(res)
   return(out)
-#  return(RSQLite::dbFetch(RSQLite::dbSendQuery(repo,sql),n=-1))
 
 }
+
+#' @rdname get_rule_sequence
+#' @return For \code{get_validator} an object of class \code{\link[validate]{validator}}
+#' @export
+get_validator <-function(repo, seq_id, when=NA_character_){ 
+  d <- get_rule_sequence(repo=repo, seq_id=seq_id, when=when)
+  map <- c(rule="Expression", name="Name")
+  r <- d[map]
+  names(r) <- names(map)
+  validator(.data=r)
+
+}
+
+
+#' Swap the position of two rules in a rule sequence
+#'
+#' @param repo \code{[SQLiteConnection]} as created by 
+#'        \code{\link{new_repo}} or \code{\link{open_repo}}
+#' @param seq_id \code{[integer]} identity of the rule sequence
+#' @param rule1 \code{[integer]} identity of the first rule
+#' @param position1 \code{[integer]} position of the first rule in the sequence
+#' @param rule2 \code{[integer]} identity of the rule to swap position with
+#' @param position2 \code{[integer]} position of the rule to swap position with
+#' 
+#' @export
+swap_rules <- function(repo, seq_id, rule1, position1, rule2, position2){
+  current_time <- now()
+  fmt <- "update InSequence set End = '%s', EndComment='swapped'
+          where End IS NULL and SeqId == %d and RuleId == %d and Position == %d"
+
+  # Remove rules from old positions
+  rs <- dbSendStatement(repo, sprintf(fmt, current_time, seq_id, rule1, position1))
+  dbClearResult(rs)
+  rs <- dbSendStatement(repo, sprintf(fmt, current_time, seq_id, rule2, position2))
+  dbClearResult(rs)
+  
+
+  d <- data.frame(SeqId = seq_id, RuleId = c(rule1, rule2), Position = c(position2, position1), Start=current_time
+                , StartComment='swapped') 
+  dbAppendTable(repo, "InSequence", d)
+
+  invisible(repo)
+
+}
+
 
 #' Retrieve a list of all rule sequences
 #'
@@ -390,5 +435,19 @@ get_rule_sequence <- function(repo, seq_id, when=NA_character_){
 get_sequences <- function(repo){
    dbReadTable(repo, "RuleSequence")
 }
+
+#' Get historic record of rule sequences
+#' 
+#' @param repo \code{[SQLiteConnection]} as created by 
+#'        \code{\link{new_repo}} or \code{\link{open_repo}}
+#' @param seq_id \code{[integer]} identity of the rule sequence
+#'
+#' @return a data frame
+#' @export
+get_history <- function(repo, seq_id = NA_integer_){
+  out <- dbReadTable(repo, "InSequence")
+  if (!is.na(seq_id)) out[out$SeqId == seq_id,,drop=FALSE] else out
+}
+
 
 
