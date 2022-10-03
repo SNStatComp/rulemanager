@@ -35,10 +35,11 @@ to_title_case <- function(x){
 #' \dontrun{
 #'  new_repo("my_rulez.sqlite")
 #' }
-#'
+#' @export
 new_repo <- function(path,...){
   if (file.exists(path)) 
     stop("Trying to create a new repo in existing database. Quitting.")
+
 
   # create repo, report side effects.
   db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname=path)
@@ -102,6 +103,8 @@ new_repo <- function(path,...){
 #' @param ... Currently unused.
 #'
 #' @return a database connection to the rule repository.
+#'
+#' @export
 open_repo <- function(path,...){
   if (!file.exists(path)) stopf("File location\n %s\ncould not be found",path)
   db <- RSQLite::dbConnect(RSQLite::SQLite(), dbname = path)
@@ -131,7 +134,7 @@ open_repo <- function(path,...){
 #'
 #' @param repo \code{[SQLiteConnection]}
 #'
-#' 
+#' @export
 close_repo <- function(repo) RSQLite::dbDisconnect(repo)
 
 
@@ -147,11 +150,12 @@ close_repo <- function(repo) RSQLite::dbDisconnect(repo)
 #'
 #'
 #' @return The \code{repo}.
-#'
+#' @export
 add_rule_sequence <- function(repo, name, description=NA_character_){
   d <- data.frame( Name=as.character(name)
                  , Description=as.character(description))
   RSQLite::dbWriteTable(repo, "RuleSequence", d,append=TRUE)
+  invisible(repo)
 
 }
 
@@ -166,6 +170,7 @@ add_rule_sequence <- function(repo, name, description=NA_character_){
 #' @param ... passed to other methods
 #'
 #' @return The \code{repo}
+#' @export
 setGeneric("add_rules",
   def = function(repo, rules,...) standardGeneric("add_rules")
 )
@@ -181,7 +186,7 @@ setMethod("add_rules", signature = c("SQLiteConnection","data.frame")
             , paste(colnames[!colnames %in% names(rules)], sep=", "))
       }
       ._add_rules(repo, rules)
-      repo
+      invisible(repo)
    }
 
 )
@@ -206,6 +211,7 @@ setMethod("add_rules", signature = c("SQLiteConnection","validator")
 #' @param repo \code{[SQLiteConnection]} as created by 
 #'        \code{\link{new_repo}} or \code{\link{open_repo}}
 #'
+#' @export
 get_rules <- function(repo){
  suppressWarnings(RSQLite::dbReadTable(repo, "Rule"))
 }
@@ -239,11 +245,11 @@ remove_rule <- function(repo, seq_id, rule_id, position, comment=""){
   n <- seq_length(repo, seq_id)
 
   sql <- sprintf("
-          select rule_id, seq_id, position from InSequence
+          select RuleId, SeqId, Position from InSequence
           where End IS NULL and SeqId == %d and Position >= %d;
         ", seq_id, position)
     
-  tab <- dbFetch(dbGetQuery(repo, sql))
+  tab <- dbGetQuery(repo, sql)
   # remove, in current list (End IS NULL) all rules from 'position' up.
   for ( i in seq_len(nrow(tab)) ){
     sql <- sprintf(
@@ -303,7 +309,7 @@ insert_rule <- function(repo, rule_id, seq_id, position=NA_integer_, comment="")
   # Remove all current (End IS NULL) sequence items above position
   sql <- sprintf("select RuleId, SeqId, Position, Start
                  from InSequence inner join Rule on InSequence.RuleId = Rule.Id 
-                 where End IS NULL and SeqId == %d and Position > %d
+                 where End IS NULL and SeqId == %d and Position >= %d
                  ", seq_id, position)
   tab <- dbGetQuery(repo, sql)
   for ( i in mseq(1, nrow(tab)) ){
@@ -337,7 +343,7 @@ insert_rule <- function(repo, rule_id, seq_id, position=NA_integer_, comment="")
 #'
 #' @return A \code{data.frame} with Position, Name, Expression, sorted ascending
 #'         by Position.
-#'
+#' @export
 get_rule_sequence <- function(repo, seq_id, when=NA_character_){
  
 
@@ -346,13 +352,15 @@ get_rule_sequence <- function(repo, seq_id, when=NA_character_){
                     from InSequence inner join Rule on Rule.Id = InSequence.RuleId
                     where SeqId == %d and End IS NULL
                     order by Position ASC", seq_id)
-  
-    return(RSQLite::dbFetch(RSQLite::dbSendQuery(repo,sql),n=-1))
+    res <- RSQLite::dbSendQuery(repo,sql)
+    out <- dbFetch(res, n=-1)
+    dbClearResult(res)
+    return(out)
   }
 
   timestamp <- strptime(as.character(when), "%Y-%m-%d %X")
   if (is.na(timestamp)){
-    stopf("Timestamp must be in %Y-%m-%d %X format, e.g. '%s'",as.character(Sys.time()) )
+    stopf("Timestamp must be in %%Y-%%m-%%d %%X format, e.g. '%s'",as.character(Sys.time()) )
   }
 
 
@@ -362,11 +370,25 @@ get_rule_sequence <- function(repo, seq_id, when=NA_character_){
                   order by Position ASC",
                   seq_id, timestamp, timestamp)
 
-
-  return(RSQLite::dbFetch(RSQLite::dbSendQuery(repo,sql),n=-1))
+  res <- RSQLite::dbSendQuery(repo,sql)
+  out <- dbFetch(res, n=-1)
+  dbClearResult(res)
+  return(out)
+#  return(RSQLite::dbFetch(RSQLite::dbSendQuery(repo,sql),n=-1))
 
 }
 
-
+#' Retrieve a list of all rule sequences
+#'
+#' List the rule sequences available in a rule repository.
+#'
+#' @param repo \code{[SQLiteConnection]} as created by 
+#'        \code{\link{new_repo}} or \code{\link{open_repo}}
+#'
+#' @return A data frame
+#' @export
+get_sequences <- function(repo){
+   dbReadTable(repo, "RuleSequence")
+}
 
 
