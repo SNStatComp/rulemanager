@@ -61,9 +61,9 @@ systems is the idea that subject matter knowledge should be separated as much
 as possible from technical (IT) knowledge. This is apparent in the Common
 Statistical Production Architecture \citep{modernstats2015cspa} which promotes
 a separation between the description of business functions and implementation
-detail. It also promotes a modular architecure where building a production
-system in principle amounts to assembling a set of prebuilt modules for
-different business functions and parameterizing them with business logic for
+detail. It also promotes a modular architecture where building a production
+system in principle amounts to assembling a set of pre-built modules for
+different business functions and parametrizing them with business logic for
 the system at  hand.
 
 \paragraph In practice these considerations lead to rule-driven data processing
@@ -79,12 +79,12 @@ of data validation and rule-based data cleaning engines based in R and Python
 \citep{loo2021validate,loo2021dcmodify,bantilan2020pandera}.
 
 \paragraph The advent of rule-based production systems, as well as the ongoing
-integration of production systems accross institutes naturally leads to the
+integration of production systems across institutes naturally leads to the
 issue of rule management. A need arises to manage and maintain rule sets that
 drive production processes. If done properly, rule management systems offer
 great advantages to statistical organisations. They facilitate reproducibility
 of production, exchange and reuse of formalized domain knowledge, and offer the
-possibility of comparing rule sets accross production systems. 
+possibility of comparing rule sets across production systems. 
 
 \paragraph The idea of rule management systems is currently developed in
 several contexts. For example, Eurostat is building a repository for the
@@ -133,15 +133,15 @@ management system: as a statistician producing official statistics, I want to
 \item Temporarily remove a rule from one or more rule sets so I can handle exceptional and transient
    data circumstances. This temporary removal should be documented.
 \item Temporarily update a rule from one or more rulesets so I can handle exceptional and transient
-   data circumstances. This temoporary update should be documented.
+   data circumstances. This temporary update should be documented.
 \end{enumerate}
 
-\paragraph There are also user stories from the perspectif of a statistical organisation.
+\paragraph There are also user stories from the perspective of a statistical organisation.
 Although these will not be very influential to our design, it is still illuminating to
 mention them here. As a statistical organization, I want to
 \begin{enumerate}[O1]
 \item Promote reuse of rules.
-\item Promote transparency and learning accross production systems, by
+\item Promote transparency and learning across production systems, by
       comparing and benchmarking rules and rule sets.
 \end{enumerate}
 
@@ -157,7 +157,7 @@ that one can reason about its behaviour because it derives from a compact set
 of formal concepts and relations; that it is extensible because one can build
 complex functionality based on the simple underlying concepts and relations.
 
-\paragraph In the current work, we informally work with data tranformation
+\paragraph In the current work, we informally work with data transformation
 rules of various types, and data validation rules and certain tables to store
 and manage them. In the following subsections we provide formal definitions for
 generic data transformation rules, for the data structures to hold them, and
@@ -167,7 +167,7 @@ for the basic operations to manipulate them.
 
 \subsection{What are rules?} \label{sect:rules}
 \paragraph The premise of many modern official statistical production systems
-is that they should be rule-driven. Yet, a formal definitioin of such data
+is that they should be rule-driven. Yet, a formal definition of such data
 processing rules seems to be lacking.  Here, we generalize the work on data
 validation rules first discussed in \citet{loo2015formal} but see
 \cite{loo2018statistical, loo2021datavalidation} for extensive discussions.  In
@@ -180,7 +180,7 @@ least represent the population, the measurement or observation used to obtain
 the value, the unit of the population that was measured, and the variable that
 was measured.
 
-\paragraph To understand the ful generality of this definition of a data point,
+\paragraph To understand the full generality of this definition of a data point,
 it helps to see an example. Suppose we ask two questions to two employees,
 Alice and Bob, of Statistics Netherlands (SN), namely their Age and in what
 Division they work: Economic Statistics (ES) or Social Statistics (SS). In this
@@ -295,11 +295,11 @@ limitations have no consequences.
 
 \subsection{Rule sequences}
 \paragraph In general, it matters in which order data transformations are
-executed.  Therefore, the main data structe that users encounter are not rule
+executed.  Therefore, the main data structure that users encounter are not rule
 sets (as they are usually called) but rather \emph{rule sequences}. That is, a
 list of rules $L = (r_1,r_2,\ldots, r_n)$ with a predefined order. When
 applying a rule sequence to data, we may think of it as a composed function $L
-= r_n\circ r_{n-1}\circ\cdots\circ r_1: D^K\to D'^{K'}$, turing one data set
+= r_n\circ r_{n-1}\circ\cdots\circ r_1: D^K\to D'^{K'}$, turning one data set
 into another dataset. 
 
 
@@ -341,13 +341,13 @@ $$
 where the operation $\phi_{k+1}$ is a combination of insertions, removals,
 replacements and permutations. It is not hard to convince oneself that these
 operations support user stories S1 (CRUD), S2 (select a sequence), S3
-(determine execution order), S5 (temporarily remove rules), S6 (temoporarily
-update rules). For support of S4, and in particular the tracability of the
+(determine execution order), S5 (temporarily remove rules), S6 (temporarily
+update rules). For support of S4, and in particular the traceability of the
 evolution of rule sequences, we need to look into more detail what the contents
 of the metadata element $M_{k+1}$ should hold.
 
 \paragraph The problem is that the expression `trace the evolution of rules and
-rule sets' is not very precise. If we interpret it as the ability to precicely
+rule sets' is not very precise. If we interpret it as the ability to precisely
 reconstruct all changes to a rule sequence, then we need to set $M_i= \phi_i$
 (plus some user-defined annotations), and in fact we can suffice by working
 only with the sequence of transformations $\phi_1,\phi_{2}\ldots\phi_{k}$,
@@ -360,7 +360,7 @@ removals, substitutions and permutations that change $L_k$ into $L_{k+1}$
 (Damerau-Levenshtein distance, see \citet{wagner1975extension}). The only extra
 demand is that we are able to compare two rules and test if they are equal or
 not. In this work we shall assume that we only need the latter, less precise
-version of tracability of the evolution of rule sequences. We expect that users
+version of traceability of the evolution of rule sequences. We expect that users
 are less interested in the precise technical steps taken to alter a rule
 sequence, and more in the qualitative description of it.
 
@@ -383,7 +383,7 @@ sequence. Any update to a rule sequence would require adding a complete new
 version of a rule to the table, but at least the whole history will be
 retrievable.
 
-\paragraph To save space, we choose an appraoch that is more natural to
+\paragraph To save space, we choose an approach that is more natural to
 databases and implement the following database diagram.
 \begin{center}
 \includegraphics[width=0.5\textwidth]{figures/dbdiagram.png}

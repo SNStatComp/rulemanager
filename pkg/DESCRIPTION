@@ -10,6 +10,7 @@ Description: Offers main API entry points for setting up and maintaining
     statistical production systems. Supports CRUD operations, versioned
     rules and rule sets.
 License: GPL (>= 2)
+Imports: RSQLite, methods, validate
 Suggests: tinytest
 Encoding: UTF-8
 RoxygenNote: 7.2.1
