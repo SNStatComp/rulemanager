@@ -22,6 +22,21 @@ features that focus on CRUD and reproducibility of production. The idea is to
 offer a data structure and an extensible API that offer fundamental operations
 on rules and rule sets that can be combined to build applications.
 
+## Installation
+
+You need to have `git` and `R` installed. If you are on Windows, you also need
+to have `Rtools` installed.
+
+Open a command-line interface (e.g. Powershell on Windows, bash on Linux/Mac).
+
+```
+git clone https://SNStatCom/rulemanager
+cd rule manager
+make doc
+make install
+```
+
+
 ## User stories
 
 The R package `rulemanager` aims to support the following user stories.
