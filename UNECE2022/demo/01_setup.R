@@ -34,8 +34,6 @@ for ( i in 1:10 ){
 
 get_rule_sequence(repo,seq_id=1L)
 
-# a peek under the hood (don't try this at home!)
-RSQLite::dbReadTable(repo, "InSequence")
 
 pos <- 1
 for ( i in 5:18 ){
@@ -43,11 +41,11 @@ for ( i in 5:18 ){
   pos <- pos + 1
 }
 
-
 get_rule_sequence(repo, seq_id=2L)
 
-# a peek under the hood (don't try this at home!)
-RSQLite::dbReadTable(repo, "InSequence")
+
+the_past <- as.character(Sys.time())
+
 
 close_repo(repo)
 

@@ -7,11 +7,12 @@ repo <- open_repo("my_repo.sqlite")
 # look at the available sequences
 get_sequences(repo)
 
-# get one of the rule sequences
-get_rule_sequence(repo, 1)
-
 # look at all the available rules
 get_rules(repo)
+
+# get one of the rule sequences
+get_rule_sequence(repo, 1)
+get_rule_sequence(repo, 2)
 
 # add a rule to the first sequence, in position 5
 insert_rule(repo
@@ -20,12 +21,15 @@ insert_rule(repo
             , position = 5
             , comment="new balance rule")
 
-swap_rules(repo, seq_id=1, rule1=7, position1=7, rule2=9, position2=9)
+swap_rules(repo, seq_id=1
+           , rule1=7, position1=7
+           , rule2=9, position2=9)
 
 get_rule_sequence(repo,1)
 
 # Jump into your TARDIS and look at the old sequence
-get_rule_sequence(repo, seq_id=1L, when = "2022-10-03 14:10:00")
+get_rule_sequence(repo
+                  , seq_id=1L, when = "2022-10-03 14:10:00")
 
 remove_rule(repo,seq_id=1, rule_id=2, position=2, comment="get rid of it")
 

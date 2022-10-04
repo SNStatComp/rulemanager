@@ -1,7 +1,7 @@
 Package: rulemanager
 Type: Package
 Title: An API for managing rules and rulesets
-Version: 0.0.11
+Version: 0.0.12
 Date: 2022-06-20
 Author: Mark van der Loo
 Maintainer: Mark van der Loo <mark.vanderloo@gmail.com>

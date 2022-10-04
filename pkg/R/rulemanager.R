@@ -269,7 +269,7 @@ remove_rule <- function(repo, seq_id, rule_id, position, comment=""){
     RSQLite::dbClearResult(RSQLite::dbSendStatement(repo, sql))
   }
 
-  repo
+  invisible(repo)
 }
 
 
